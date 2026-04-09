@@ -69,6 +69,12 @@ export default function AdminApp() {
   };
 
   const handleUpdateComp = async (id: string) => {
+    const comp = components.find(c => c.id === id);
+    if (!comp || editName.trim() === '' || editName === comp.name) {
+      setIsEditingComp(null);
+      return;
+    }
+    
     try {
       const res = await fetch(`http://localhost:3000/api/components/${id}`, {
         method: 'PUT',
@@ -81,6 +87,7 @@ export default function AdminApp() {
       }
     } catch (err) {
       console.error('Failed to update component:', err);
+      setIsEditingComp(null);
     }
   };
 
@@ -281,7 +288,11 @@ export default function AdminApp() {
                   <header className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <button 
-                        onClick={() => { setIsAddingSection(false); setEditingSectionId(null); }} 
+                        onClick={() => { 
+                          setIsAddingSection(false); 
+                          setEditingSectionId(null);
+                          setNewSection({ title: '', desc: '', prompt: '', code: '', image: '' });
+                        }} 
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
                       >
                         <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
@@ -388,7 +399,11 @@ export default function AdminApp() {
                         <button className="modal-action-btn primary" onClick={handleSaveSection} style={{ height: '52px' }}>
                           {editingSectionId ? 'Update Section' : 'Save Section'}
                         </button>
-                        <button className="modal-action-btn outline" onClick={() => { setIsAddingSection(false); setEditingSectionId(null); }} style={{ height: '52px' }}>Cancel</button>
+                        <button className="modal-action-btn outline" onClick={() => { 
+                          setIsAddingSection(false); 
+                          setEditingSectionId(null);
+                          setNewSection({ title: '', desc: '', prompt: '', code: '', image: '' });
+                        }} style={{ height: '52px' }}>Cancel</button>
                       </div>
 
                     </div>

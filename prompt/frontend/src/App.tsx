@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
-import { Copy, Wand2, RefreshCw, X, Download, Code as CodeIcon, FileText } from 'lucide-react';
+import { Copy, Wand2, RefreshCw, X, Download, Code as CodeIcon, FileText, Layout } from 'lucide-react';
 import './index.css';
 
 interface AnalysisResult {
@@ -88,6 +88,17 @@ function Sidebar({ activeTab, onTabSelect, components }: { activeTab: string; on
           onClick={() => onTabSelect('Home')}
         >
           <span className="nav-item-label">Home</span>
+        </div>
+
+        <div 
+          className={`nav-item ${activeTab === 'Design Manifest' ? 'active' : ''}`}
+          onClick={() => onTabSelect('Design Manifest')}
+        >
+          <span className="nav-item-label">Design Manifest</span>
+        </div>
+
+        <div style={{ padding: '8px 24px', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '16px' }}>
+          Browse Components
         </div>
         {components.map((item) => (
           <div 
@@ -250,6 +261,37 @@ function ComponentModal({ item, onClose }: { item: GalleryItem; onClose: () => v
 export default function App() {
   const [activeTab, setActiveTab] = useState('Home');
   const [components, setComponents] = useState<ComponentData[]>([]);
+  
+  // Design Manifest States
+  const [manifest, setManifest] = useState({
+    businessName: '',
+    primaryColor: '#3368F7',
+    headingFont: 'Space Grotesk',
+    bodyFont: 'Inter',
+    sectionType: 'Hero Section'
+  });
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+
+  const GOOGLE_FONTS = [
+    'Inter', 'Space Grotesk', 'Poppins', 'Montserrat', 'Roboto', 
+    'Open Sans', 'Playfair Display', 'Merriweather', 'Nunito', 'Outfit', 
+    'Syne', 'Lexend', 'Sora', 'Work Sans', 'Kanit', 'Ubuntu', 
+    'Lato', 'Oswald', 'Raleway', 'Quicksand'
+  ];
+
+  const SECTION_TYPES = [
+    'Hero Section', 'Features Grid', 'Testimonials', 'Pricing Table', 
+    'Stats Section', 'Contact Form', 'FAQ Section', 'Footer'
+  ];
+
+  const handleGeneratePrompt = () => {
+    const prompt = `Design a premium ${manifest.sectionType} for "${manifest.businessName}". 
+Color Theme: Primary ${manifest.primaryColor}. 
+Typography: ${manifest.headingFont} (Headings), ${manifest.bodyFont} (Body).
+Aesthetics: Clean, modern, high-contrast professional design with subtle micro-animations and smooth gradients.`;
+    setGeneratedPrompt(prompt);
+  };
+
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -313,13 +355,22 @@ export default function App() {
   const handleGenerate = async () => {
     if (!file) return;
     setIsProcessing(true);
+    setResult(null);
+    setErrorMsg('');
     try {
       const formData = new FormData();
       formData.append('image', file);
       const res = await fetch('http://localhost:3000/api/analyze', { method: 'POST', body: formData });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to generate prompt');
+      }
       setResult(data);
-    } catch (err: any) { setErrorMsg(err.message); } finally { setIsProcessing(false); }
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -343,7 +394,145 @@ export default function App() {
                 <div style={{ flex: 1 }}>
                   <div className="step-header"><span className="step-number">02</span> AI Prompt</div>
                   <div className="zone-container">
-                    <textarea value={result?.prompts?.['DALL-E 3'] || ''} readOnly style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', padding: '16px', color: 'var(--text-primary)', font: 'inherit', resize: 'none' }} placeholder="Result will appear here..." />
+                    {errorMsg ? (
+                      <div style={{ padding: '16px', color: '#ff4a4a', fontSize: '13px', fontFamily: 'var(--font-mono)', lineHeight: '1.5' }}>
+                        ⚠️ {errorMsg}
+                      </div>
+                    ) : (
+                      <textarea value={result?.prompts?.['DALL-E 3'] || ''} readOnly style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', padding: '16px', color: 'var(--text-primary)', font: 'inherit', resize: 'none' }} placeholder="Result will appear here..." />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'Design Manifest' ? (
+            <div className="gallery-container">
+              <div className="gallery-header">
+                <span className="badge">Configurator / Design Manifest</span>
+                <h1 style={{ fontSize: '32px' }}>Design Manifest</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '8px' }}>
+                  Define your brand parameters to generate a specialized UI design prompt.
+                </p>
+              </div>
+
+              <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: '2px', background: 'var(--border)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                {/* Left Panel - Form */}
+                <div style={{ background: 'var(--surface)', padding: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  
+                  <div className="manifest-section">
+                    <div className="step-header">
+                      <div className="step-number">01</div>
+                      <span>Business Name</span>
+                    </div>
+                    <input 
+                      type="text"
+                      className="manifest-input"
+                      placeholder="e.g. Antigravity AI"
+                      value={manifest.businessName}
+                      onChange={e => setManifest({...manifest, businessName: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="manifest-section">
+                    <div className="step-header">
+                      <div className="step-number">02</div>
+                      <span>Brand Identity</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <input 
+                        type="color" 
+                        value={manifest.primaryColor}
+                        onChange={e => setManifest({...manifest, primaryColor: e.target.value})}
+                        style={{ width: '45px', height: '42px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', borderRadius: '4px', padding: '2px' }}
+                      />
+                      <input 
+                        type="text"
+                        className="manifest-input"
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}
+                        value={manifest.primaryColor}
+                        onChange={e => setManifest({...manifest, primaryColor: e.target.value})}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                    <div className="manifest-section">
+                      <div className="step-header">
+                        <div className="step-number">03</div>
+                        <span>Heading Font</span>
+                      </div>
+                      <select 
+                        className="manifest-input"
+                        value={manifest.headingFont}
+                        onChange={e => setManifest({...manifest, headingFont: e.target.value})}
+                      >
+                        {GOOGLE_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+                    <div className="manifest-section">
+                      <div className="step-header">
+                        <div className="step-number">04</div>
+                        <span>Body Font</span>
+                      </div>
+                      <select 
+                        className="manifest-input"
+                        value={manifest.bodyFont}
+                        onChange={e => setManifest({...manifest, bodyFont: e.target.value})}
+                      >
+                        {GOOGLE_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="manifest-section">
+                    <div className="step-header">
+                      <div className="step-number">05</div>
+                      <span>Project Scope</span>
+                    </div>
+                    <select 
+                      className="manifest-input"
+                      value={manifest.sectionType}
+                      onChange={e => setManifest({...manifest, sectionType: e.target.value})}
+                    >
+                      {SECTION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <button 
+                    className="action-btn" 
+                    onClick={handleGeneratePrompt}
+                    disabled={!manifest.businessName}
+                  >
+                    Generate UI Prompt
+                  </button>
+                </div>
+
+                {/* Right Panel - Preview */}
+                <div style={{ background: '#09090A', padding: '40px', display: 'flex', flexDirection: 'column' }}>
+                  <div className="step-header">
+                    <span>Generated Design Concept</span>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+                    {generatedPrompt ? (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, fontFamily: 'var(--font-mono)', wordBreak: 'break-word' }}>
+                          {generatedPrompt}
+                        </div>
+                        <button 
+                          className="action-btn secondary"
+                          onClick={() => { navigator.clipboard.writeText(generatedPrompt); alert('Copied to clipboard!'); }}
+                          style={{ marginTop: 'auto', width: 'auto', alignSelf: 'flex-start' }}
+                        >
+                          <Copy size={14} /> Copy Prompt
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        <Layout size={40} style={{ marginBottom: '16px', opacity: 0.2 }} />
+                        <p style={{ fontSize: '13px' }}>Your design strategy will appear here...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
