@@ -284,12 +284,25 @@ export default function App() {
     'Stats Section', 'Contact Form', 'FAQ Section', 'Footer'
   ];
 
-  const handleGeneratePrompt = () => {
-    const prompt = `Design a premium ${manifest.sectionType} for "${manifest.businessName}". 
-Color Theme: Primary ${manifest.primaryColor}. 
-Typography: ${manifest.headingFont} (Headings), ${manifest.bodyFont} (Body).
-Aesthetics: Clean, modern, high-contrast professional design with subtle micro-animations and smooth gradients.`;
-    setGeneratedPrompt(prompt);
+  const [isGeneratingManifest, setIsGeneratingManifest] = useState(false);
+
+  const handleGeneratePrompt = async () => {
+    setIsGeneratingManifest(true);
+    setGeneratedPrompt('Generating premium prompt with Claude...');
+    try {
+      const res = await fetch('http://localhost:3000/api/generate-manifest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(manifest)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate');
+      setGeneratedPrompt(data.prompt);
+    } catch (err: any) {
+      setGeneratedPrompt(`⚠️ API Error: ${err.message}`);
+    } finally {
+      setIsGeneratingManifest(false);
+    }
   };
 
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
@@ -502,9 +515,9 @@ Aesthetics: Clean, modern, high-contrast professional design with subtle micro-a
                   <button 
                     className="action-btn" 
                     onClick={handleGeneratePrompt}
-                    disabled={!manifest.businessName}
+                    disabled={!manifest.businessName || isGeneratingManifest}
                   >
-                    Generate UI Prompt
+                    {isGeneratingManifest ? 'Generating with Claude...' : 'Generate UI Prompt'}
                   </button>
                 </div>
 

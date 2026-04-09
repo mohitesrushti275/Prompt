@@ -419,4 +419,41 @@ app.post('/api/analyze', (req, res, next) => {
   }
 });
 
+app.post('/api/generate-manifest', async (req, res) => {
+  try {
+    const { businessName, primaryColor, headingFont, bodyFont, sectionType } = req.body;
+    
+    if (!anthropic) throw new Error('Anthropic client not initialized');
+
+    console.log(`[Manifest] Generating prompt for ${sectionType} of ${businessName || 'A Modern Business'}...`);
+
+    const completion = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      temperature: 0.7,
+      system: 'You are an expert AI prompt engineer specializing in UI/UX design generation prompts for DALL-E/Midjourney. Output ONLY the raw prompt text.',
+      messages: [
+        {
+          role: 'user',
+          content: `Create a highly detailed, professional generative AI prompt to design a premium UI component based on the following specifications:
+          
+Business Name: ${businessName || 'A Modern Business'}
+Section Type: ${sectionType}
+Primary Color Theme: ${primaryColor}
+Heading Typography: ${headingFont}
+Body Typography: ${bodyFont}
+Overall Aesthetic: Clean, modern, high-contrast professional design with subtle depth, glassmorphism elements, and smooth gradients.
+
+Describe the specific layout, the visual elements, realistic UI copy placement, photography/vector art style, hex color integration, and professional lighting and quality tags. Keep it under 150 words. Do not include any conversational text.`
+        }
+      ]
+    });
+
+    res.json({ prompt: completion.content[0].text.trim() });
+  } catch (error) {
+    console.error('[Manifest ✗] Error generating prompt:', error?.message || error);
+    res.status(500).json({ error: error?.message || 'Failed to generate prompt' });
+  }
+});
+
 app.listen(port, () => console.log(`🚀 Backend running at http://localhost:${port}`));
