@@ -5,7 +5,6 @@ import './index.css';
 interface Subsection {
   id: string;
   title: string;
-  desc: string;
   prompt?: string;
   code?: string;
   image?: string;
@@ -29,7 +28,7 @@ export default function AdminApp() {
   
   const [isAddingSection, setIsAddingSection] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [newSection, setNewSection] = useState({ title: '', desc: '', prompt: '', code: '', image: '' });
+  const [newSection, setNewSection] = useState({ title: '', prompt: '', code: '', image: '' });
   const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
@@ -147,7 +146,7 @@ export default function AdminApp() {
       if (res.ok) {
         setIsAddingSection(false);
         setEditingSectionId(null);
-        setNewSection({ title: '', desc: '', prompt: '', code: '', image: '' });
+        setNewSection({ title: '', prompt: '', code: '', image: '' });
         await fetchComponents();
       }
     } catch (err) {
@@ -159,7 +158,6 @@ export default function AdminApp() {
     setEditingSectionId(sub.id);
     setNewSection({
       title: sub.title,
-      desc: sub.desc,
       prompt: sub.prompt || '',
       code: sub.code || '',
       image: sub.image || ''
@@ -275,7 +273,6 @@ export default function AdminApp() {
                         </button>
                       </div>
                     </div>
-                    <p className="gallery-card-desc" style={{ marginTop: '4px' }}>{sub.desc}</p>
                   </div>
                 </div>
               ))}
@@ -291,7 +288,7 @@ export default function AdminApp() {
                         onClick={() => { 
                           setIsAddingSection(false); 
                           setEditingSectionId(null);
-                          setNewSection({ title: '', desc: '', prompt: '', code: '', image: '' });
+                          setNewSection({ title: '', prompt: '', code: '', image: '' });
                         }} 
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
                       >
@@ -304,8 +301,8 @@ export default function AdminApp() {
                   <div className="modal-body" style={{ gridTemplateColumns: '1fr', overflowY: 'auto', maxHeight: '70vh' }}>
                     <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
                       
-                      {/* Grid for Name and Desc */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      {/* Grid for Name */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                         <div className="modal-meta-section">
                           <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name of Section</label>
                           <input 
@@ -314,16 +311,6 @@ export default function AdminApp() {
                             value={newSection.title}
                             onChange={(e) => setNewSection({...newSection, title: e.target.value})}
                             placeholder="e.g. Hero Section V1"
-                          />
-                        </div>
-                        <div className="modal-meta-section">
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Description</label>
-                          <input 
-                            className="admin-input" 
-                            style={{ height: '56px' }}
-                            value={newSection.desc}
-                            onChange={(e) => setNewSection({...newSection, desc: e.target.value})}
-                            placeholder="Briefly describe this section..."
                           />
                         </div>
                       </div>
@@ -402,7 +389,7 @@ export default function AdminApp() {
                         <button className="modal-action-btn outline" onClick={() => { 
                           setIsAddingSection(false); 
                           setEditingSectionId(null);
-                          setNewSection({ title: '', desc: '', prompt: '', code: '', image: '' });
+                          setNewSection({ title: '', prompt: '', code: '', image: '' });
                         }} style={{ height: '52px' }}>Cancel</button>
                       </div>
 

@@ -144,7 +144,7 @@ app.get('/api/subsections/:id', (req, res) => {
 
 app.post('/api/components/:id/subsections', (req, res) => {
   const { id } = req.params;
-  const { title, desc, prompt, code, image } = req.body;
+  const { title, prompt, code, image } = req.body;
   const data = readData();
   const index = data.components.findIndex(c => c.id === id);
   if (index === -1) return res.status(404).json({ error: 'Component not found' });
@@ -152,7 +152,6 @@ app.post('/api/components/:id/subsections', (req, res) => {
   const newSection = {
     id: Date.now().toString(),
     title,
-    desc,
     prompt: prompt || '',
     code: code || '',
     image: image || '',
@@ -166,7 +165,7 @@ app.post('/api/components/:id/subsections', (req, res) => {
 
 app.put('/api/subsections/:id', (req, res) => {
   const { id } = req.params;
-  const { title, desc, prompt, code, image } = req.body;
+  const { title, prompt, code, image } = req.body;
   const data = readData();
   let updated = null;
 
@@ -176,7 +175,6 @@ app.put('/api/subsections/:id', (req, res) => {
       comp.subsections[sIndex] = { 
         ...comp.subsections[sIndex], 
         title: title !== undefined ? title : comp.subsections[sIndex].title,
-        desc: desc !== undefined ? desc : comp.subsections[sIndex].desc,
         prompt: prompt !== undefined ? prompt : comp.subsections[sIndex].prompt,
         code: code !== undefined ? code : comp.subsections[sIndex].code,
         image: image !== undefined ? image : comp.subsections[sIndex].image

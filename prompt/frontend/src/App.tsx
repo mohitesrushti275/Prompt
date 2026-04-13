@@ -18,7 +18,6 @@ interface PromptHistoryItem {
 interface GalleryItem {
   id: string;
   title: string;
-  desc: string;
   category: string;
   prompt?: string;
   code?: string;
@@ -137,13 +136,12 @@ const BorderPreview = ({ type }: { type: string }) => {
   );
 };
 
-function GalleryCard({ title, desc, onClick, children }: { title: string; desc: string; onClick: () => void; children: React.ReactNode }) {
+function GalleryCard({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <div className="gallery-card" onClick={onClick}>
       <div className="gallery-card-preview">{children}</div>
       <div className="gallery-card-info">
         <h3 className="gallery-card-title">{title}</h3>
-        <p className="gallery-card-desc">{desc}</p>
       </div>
     </div>
   );
@@ -154,7 +152,6 @@ function ComponentModal({ item, onClose }: { item: GalleryItem; onClose: () => v
     id: item.id,
     title: item.title, 
     category: item.category, 
-    description: item.desc,
     prompt: item.prompt || '',
     code: item.code || '',
     image: item.image || '',
@@ -201,7 +198,6 @@ function ComponentModal({ item, onClose }: { item: GalleryItem; onClose: () => v
           <div className="modal-details-area">
             <div className="modal-meta-section">
               <span className="badge" style={{ marginBottom: '12px' }}>{item.category} / Component</span>
-              <p className="modal-desc" style={{ marginBottom: '24px' }}>{item.desc}</p>
             </div>
 
             {item.prompt && (
@@ -558,7 +554,7 @@ export default function App() {
               </header>
               <div className="gallery-grid">
                 {galleryItems.map(item => (
-                  <GalleryCard key={item.id} title={item.title} desc={item.desc} onClick={async () => {
+                  <GalleryCard key={item.id} title={item.title} onClick={async () => {
                     // Fetch fresh data for the modal to ensure sync
                     try {
                       const res = await fetch(`http://localhost:3000/api/subsections/${item.id}`);
